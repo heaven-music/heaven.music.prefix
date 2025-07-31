@@ -275,9 +275,6 @@ async function handleInteraction(i, player, channel) {
             player.stop();
             await sendEmbed(channel, "⏭️ **Player will play the next song!**");
             break;
-        case 'disableLoop':
-            disableLoop(player, channel);
-            break;
         case 'showLyrics':
             showLyrics(channel, player);
             break;
