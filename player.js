@@ -111,6 +111,7 @@ function initializePlayer(client) {
             .setColor('#006afb');
 
             const actionRow1 = createActionRow1(false);
+            const actionRow2 = createActionRow2(false);
 
             const message = await sendMessageWithPermissionsCheck(channel, embed, attachment, actionRow1, actionRow2);
             
@@ -487,12 +488,16 @@ function createActionRow1(disabled) {
         .addComponents(
             new ButtonBuilder().setCustomId("loopToggle").setEmoji('1400476596661522562').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
             new ButtonBuilder().setCustomId("skipTrack").setEmoji('⏭️').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
-            new ButtonBuilder().setCustomId("stopTrack").setEmoji('⏹').setStyle(ButtonStyle.Danger).setDisabled(disabled),
-            new ButtonBuilder().setCustomId("pauseTrack").setEmoji('⏸').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
-            new ButtonBuilder().setCustomId("resumeTrack").setEmoji('▶').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
         );
 }
 
-
+function createActionRow2(disabled) {
+    return new ActionRowBuilder()
+        .addComponents(
+            new ButtonBuilder().setCustomId("stopTrack").setEmoji('⏹').setStyle(ButtonStyle.Danger).setDisabled(disabled),
+            new ButtonBuilder().setCustomId("pauseTrack").setEmoji('⏸').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
+            new ButtonBuilder().setCustomId("resumeTrack").setEmoji('▶').setStyle(ButtonStyle.Secondary).setDisabled(disabled)
+        );
+}
 
 module.exports = { initializePlayer };
