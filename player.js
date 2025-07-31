@@ -486,17 +486,17 @@ async function showLyrics(channel, player) {
 function createActionRow1(disabled) {
     return new ActionRowBuilder()
         .addComponents(
-            new ButtonBuilder().setCustomId("loopToggle").setEmoji('1400476596661522562').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
-            new ButtonBuilder().setCustomId("skipTrack").setEmoji('⏭️').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
+            new ButtonBuilder().setCustomId("loopToggle").setEmoji('1400513639143702700').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
+            new ButtonBuilder().setCustomId("skipTrack").setEmoji('1400513671301562398').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
         );
 }
 
 function createActionRow2(disabled) {
     return new ActionRowBuilder()
         .addComponents(
-            new ButtonBuilder().setCustomId("stopTrack").setEmoji('⏹').setStyle(ButtonStyle.Danger).setDisabled(disabled),
-            new ButtonBuilder().setCustomId("pauseTrack").setEmoji('⏸').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
-            new ButtonBuilder().setCustomId("resumeTrack").setEmoji('▶').setStyle(ButtonStyle.Secondary).setDisabled(disabled)
+            new ButtonBuilder().setCustomId("stopTrack").setEmoji('1400513883801653369').setStyle(ButtonStyle.Danger).setDisabled(disabled),
+            new ButtonBuilder().setCustomId("pauseTrack").setEmoji('1400513658580107465').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
+            new ButtonBuilder().setCustomId("resumeTrack").setEmoji('1400513682236112966').setStyle(ButtonStyle.Secondary).setDisabled(disabled)
         );
 }
 
