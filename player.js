@@ -82,10 +82,10 @@ function initializePlayer(client) {
                 thumbnailImage: track.info.thumbnail || 'https://example.com/default_thumbnail.png',
                 backgroundColor: '#070707',
                 progress: 10,
-                progressColor: '#FF7A00',
-                progressBarColor: '#5F2D00',
+                progressColor: '#006afb',
+                progressBarColor: '#0251bd',
                 name: track.info.title,
-                nameColor: '#FF7A00',
+                nameColor: '#006afb',
                 author: track.info.author || 'Unknown Artist',
                 authorColor: '#696969',
             });
@@ -106,9 +106,9 @@ function initializePlayer(client) {
             .setTimestamp()
             .setDescription(  
                 `- **Title:** [${track.info.title}](${track.info.uri})\n` + `- **Author:** ${track.info.author || 'Unknown Artist'}\n` +
-                `- **Requester:** ${requester}\n` + '**- Controls :**\n 🔁 `Loop`, ❌ `Disable`, ⏭️ `Skip`, 🎤 `Lyrics`, 🗑️ `Clear`\n ⏹️ `Stop`, ⏸️ `Pause`, ▶️ `Resume`, 🔊 `Vol +`, 🔉 `Vol -`')
+                `- **Requester:** ${requester}\n` + '**- Controls :**')
             .setImage('attachment://musicard.png')
-            .setColor('#03c0fe');
+            .setColor('#006afb');
 
             const actionRow1 = createActionRow1(false);
             const actionRow2 = createActionRow2(false);
