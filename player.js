@@ -111,6 +111,7 @@ function initializePlayer(client) {
             .setColor('#006afb');
 
             const actionRow1 = createActionRow1(false);
+            const actionRow2 = createActionRow2(false);
 
             const message = await sendMessageWithPermissionsCheck(channel, embed, attachment, actionRow1, actionRow2);
             
