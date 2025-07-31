@@ -83,7 +83,7 @@ function initializePlayer(client) {
                 backgroundColor: '#070707',
                 progress: 10,
                 progressColor: '#006afb',
-                progressBarColor: '#0251bd',
+                progressBarColor: '#559bfa',
                 name: track.info.title,
                 nameColor: '#006afb',
                 author: track.info.author || 'Unknown Artist',
