@@ -106,7 +106,7 @@ function initializePlayer(client) {
             .setTimestamp()
             .setDescription(  
                 `- **Title:** [${track.info.title}](${track.info.uri})\n` + `- **Author:** ${track.info.author || 'Unknown Artist'}\n` +
-                `- **Requester:** ${requester}\n` +
+                `- **Requester:** ${requester}\n`
             .setImage('attachment://musicard.png')
             .setColor('#03c0fe');
 
