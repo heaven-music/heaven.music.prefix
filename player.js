@@ -31,7 +31,7 @@ async function sendMessageWithPermissionsCheck(channel, embed, attachment, actio
     } catch (error) {
         console.error("Error sending message:", error.message);
         const errorEmbed = new EmbedBuilder()
-            .setColor('#FF0000')
+            .setColor('#ffffffff')
             .setDescription("⚠️ **Unable to send message. Check bot permissions.**");
         await channel.send({ embeds: [errorEmbed] });
     }
@@ -132,7 +132,7 @@ function initializePlayer(client) {
         } catch (error) {
             console.error("Error creating or sending music card:", error.message);
             const errorEmbed = new EmbedBuilder()
-                .setColor('#FF0000')
+                .setColor('#ffffffff')
                 .setDescription("⚠️ **Unable to load track card. Continuing playback...**");
             await channel.send({ embeds: [errorEmbed] });
         }
