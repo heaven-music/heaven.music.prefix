@@ -11,7 +11,7 @@ const axios = require('axios');
 const { autoplayCollection } = require('./mongodb.js');
 const guildTrackMessages = new Map();
 
-async function sendMessageWithPermissionsCheck(channel, embed, attachment, actionRow1, actionRow2) {
+async function sendMessageWithPermissionsCheck(channel, embed, attachment, actionRow) {
     try {
         const permissions = channel.permissionsFor(channel.guild.members.me);
         if (!permissions.has(PermissionsBitField.Flags.SendMessages) ||
@@ -25,7 +25,7 @@ async function sendMessageWithPermissionsCheck(channel, embed, attachment, actio
         const message = await channel.send({
             embeds: [embed],
             files: [attachment],
-            components: [actionRow1, actionRow2]
+            components: [actionRow]
         });
         return message;
     } catch (error) {
@@ -74,7 +74,6 @@ function initializePlayer(client) {
         const trackUri = track.info.uri;
         const requester = requesters.get(trackUri);
 
-        // Clean up previous track messages for this guild
         await cleanupPreviousTrackMessages(channel, guildId);
 
         try {
@@ -90,11 +89,9 @@ function initializePlayer(client) {
                 authorColor: '#696969',
             });
 
-            // Save the generated card to a file
             const cardPath = path.join(__dirname, 'musicard.png');
             fs.writeFileSync(cardPath, musicard);
 
-            // Prepare the attachment and embed
             const attachment = new AttachmentBuilder(cardPath, { name: 'musicard.png' });
             const embed = new EmbedBuilder()
             .setAuthor({ 
@@ -110,13 +107,11 @@ function initializePlayer(client) {
             .setImage('attachment://musicard.png')
             .setColor('#006afb');
 
-            const actionRow1 = createActionRow1(false);
-            const actionRow2 = createActionRow2(false);
+            const actionRow = createControlButtons(false);
 
-            const message = await sendMessageWithPermissionsCheck(channel, embed, attachment, actionRow1, actionRow2);
+            const message = await sendMessageWithPermissionsCheck(channel, embed, attachment, actionRow);
             
             if (message) {
-                // Store the track message for this guild
                 if (!guildTrackMessages.has(guildId)) {
                     guildTrackMessages.set(guildId, []);
                 }
@@ -193,11 +188,9 @@ async function cleanupPreviousTrackMessages(channel, guildId) {
         }
     }
 
-    // Clear the previous messages for this guild
     guildTrackMessages.set(guildId, []);
 }
 
-// New function to clean up track-related messages
 async function cleanupTrackMessages(client, player) {
     const guildId = player.guildId;
     const messages = guildTrackMessages.get(guildId) || [];
@@ -216,9 +209,9 @@ async function cleanupTrackMessages(client, player) {
         }
     }
 
-    // Clear the messages for this guild
     guildTrackMessages.set(guildId, []);
 }
+
 function formatDuration(ms) {
     const seconds = Math.floor((ms / 1000) % 60);
     const minutes = Math.floor((ms / (1000 * 60)) % 60);
@@ -232,13 +225,14 @@ function formatDuration(ms) {
         .filter(Boolean)
         .join(' ');
 }
+
 function setupCollector(client, player, channel, message) {
     const filter = i => [
-        'loopToggle', 'skipTrack', 'disableLoop', 'showLyrics', 'clearQueue',
+        'loopToggle', 'skipTrack', 'showLyrics', 'clearQueue',
         'stopTrack', 'pauseTrack', 'resumeTrack', 'volumeUp', 'volumeDown'
     ].includes(i.customId);
 
-    const collector = message.createMessageComponentCollector({ filter, time: 600000 }); // Set timeout if desired
+    const collector = message.createMessageComponentCollector({ filter, time: 600000 });
 
     collector.on('collect', async i => {
         await i.deferUpdate();
@@ -328,7 +322,6 @@ function adjustVolume(player, channel, amount) {
     }
 }
 
-
 function toggleLoop(player, channel) {
     player.setLoop(player.loop === "track" ? "queue" : "track");
     sendEmbed(channel, player.loop === "track" ? "🔁 **Track loop is activated!**" : "🔁 **Queue loop is activated!**");
@@ -339,29 +332,20 @@ function disableLoop(player, channel) {
     sendEmbed(channel, "❌ **Loop is disabled!**");
 }
 
-
-
 async function getLyrics(trackName, artistName, duration) {
     try {
-        //console.log(`🔍 Fetching lyrics for: ${trackName} - ${artistName} (${duration}s)`);
-
-      
         trackName = trackName
             .replace(/\b(Official|Audio|Video|Lyrics|Theme|Soundtrack|Music|Full Version|HD|4K|Visualizer|Radio Edit|Live|Remix|Mix|Extended|Cover|Parody|Performance|Version|Unplugged|Reupload)\b/gi, "") 
             .replace(/\s*[-_/|]\s*/g, " ") 
             .replace(/\s+/g, " ") 
             .trim();
 
-      
         artistName = artistName
             .replace(/\b(Topic|VEVO|Records|Label|Productions|Entertainment|Ltd|Inc|Band|DJ|Composer|Performer)\b/gi, "")
             .replace(/ x /gi, " & ") 
             .replace(/\s+/g, " ") 
             .trim();
 
-        //console.log(`✅ Cleaned Data: ${trackName} - ${artistName} (${duration}s)`);
-
-        
         let response = await axios.get(`https://lrclib.net/api/get`, {
             params: { track_name: trackName, artist_name: artistName, duration }
         });
@@ -370,7 +354,6 @@ async function getLyrics(trackName, artistName, duration) {
             return response.data.syncedLyrics || response.data.plainLyrics;
         }
 
-       
         response = await axios.get(`https://lrclib.net/api/get`, {
             params: { track_name: trackName, artist_name: artistName }
         });
@@ -381,8 +364,6 @@ async function getLyrics(trackName, artistName, duration) {
         return null;
     }
 }
-
-
 
 async function showLyrics(channel, player) {
     if (!player || !player.current || !player.current.info) {
@@ -398,7 +379,6 @@ async function showLyrics(channel, player) {
         return;
     }
 
-    
     const lines = lyrics.split('\n').map(line => line.trim()).filter(Boolean);
     const songDuration = Math.floor(track.length / 1000); 
 
@@ -421,7 +401,6 @@ async function showLyrics(channel, player) {
     
     const message = await channel.send({ embeds: [embed], components: [row] });
 
-    // Store the lyrics message
     const guildId = player.guildId;
     if (!guildTrackMessages.has(guildId)) {
         guildTrackMessages.set(guildId, []);
@@ -481,29 +460,15 @@ async function showLyrics(channel, player) {
     });
 }
 
-
-
-function createActionRow1(disabled) {
+function createControlButtons(disabled) {
     return new ActionRowBuilder()
         .addComponents(
             new ButtonBuilder().setCustomId("loopToggle").setEmoji('1400513639143702700').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
             new ButtonBuilder().setCustomId("skipTrack").setEmoji('1400513671301562398').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
-        );
-}
-
-function createActionRow2(disabled) {
-    return new ActionRowBuilder()
-        .addComponents(
             new ButtonBuilder().setCustomId("stopTrack").setEmoji('1400513883801653369').setStyle(ButtonStyle.Danger).setDisabled(disabled),
             new ButtonBuilder().setCustomId("pauseTrack").setEmoji('1400513658580107465').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
             new ButtonBuilder().setCustomId("resumeTrack").setEmoji('1400513682236112966').setStyle(ButtonStyle.Secondary).setDisabled(disabled)
-        );
+        );
 }
 
-
 module.exports = { initializePlayer };
-
-
-
-
-
