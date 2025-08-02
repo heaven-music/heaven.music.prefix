@@ -132,7 +132,7 @@ function initializePlayer(client) {
         } catch (error) {
             console.error("Error creating or sending music card:", error.message);
             const errorEmbed = new EmbedBuilder()
-                .setColor('#ffffffff')
+                .setColor('#ffffff')
                 .setDescription("⚠️ **Unable to load track card. Continuing playback...**");
             await channel.send({ embeds: [errorEmbed] });
         }
@@ -505,6 +505,7 @@ function createActionRow2(disabled) {
 
 
 module.exports = { initializePlayer };
+
 
 
 
