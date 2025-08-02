@@ -488,9 +488,6 @@ function createActionRow1(disabled) {
         .addComponents(
             new ButtonBuilder().setCustomId("loopToggle").setEmoji('1400513639143702700').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
             new ButtonBuilder().setCustomId("skipTrack").setEmoji('1400513671301562398').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
-            new ButtonBuilder().setCustomId("stopTrack").setEmoji('1400513883801653369').setStyle(ButtonStyle.Danger).setDisabled(disabled),
-            new ButtonBuilder().setCustomId("pauseTrack").setEmoji('1400513658580107465').setStyle(ButtonStyle.Secondary).setDisabled(disabled),
-            new ButtonBuilder().setCustomId("resumeTrack").setEmoji('1400513682236112966').setStyle(ButtonStyle.Secondary).setDisabled(disabled)
         );
 }
 
@@ -505,6 +502,7 @@ function createActionRow2(disabled) {
 
 
 module.exports = { initializePlayer };
+
 
 
 
