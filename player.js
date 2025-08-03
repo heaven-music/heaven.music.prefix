@@ -105,7 +105,7 @@ function initializePlayer(client) {
                 `- **Title:** [${track.info.title}](${track.info.uri})\n` + `- **Author:** ${track.info.author || 'Unknown Artist'}\n` +
                 `- **Requester:** ${requester}\n` + '**- Controls :**')
             .setImage('attachment://musicard.png')
-            .setColor('#006afb');
+            .setColor('#B5E6EF');
 
             const actionRow = createControlButtons(false);
 
@@ -472,4 +472,5 @@ function createControlButtons(disabled) {
 }
 
 module.exports = { initializePlayer };
+
 
