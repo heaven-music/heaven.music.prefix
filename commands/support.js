@@ -12,7 +12,7 @@ module.exports = {
             const supportServerLink = "https://discord.gg/h4heaven";
 
             const embed = new EmbedBuilder()
-                .setColor('#b300ff')
+                .setColor('#B5E6EF')
                 .setAuthor({
                     name: lang.support.embed.authorName,
                     iconURL: musicIcons.beats2Icon, 
