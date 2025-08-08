@@ -1,50 +1,44 @@
 const config = require("../config.js");
-const { InteractionType } = require('discord.js');
-const fs = require("fs");
-const path = require("path");
+const { InteractionType } = require("discord.js");
 
 module.exports = async (client, interaction) => {
   try {
+    // Only in servers
     if (!interaction?.guild) {
-      return interaction?.reply({ content: "This command can only be used in a server.", ephemeral: true });
+      return interaction.reply({
+        content: "❌ This command can only be used in a server.",
+        ephemeral: true
+      });
     }
 
     // ✅ Owner-only check for slash commands
-    if (interaction?.type === InteractionType.ApplicationCommand) {
+    if (interaction.type === InteractionType.ApplicationCommand) {
       if (!config.ownerID.includes(interaction.user.id)) {
         return interaction.reply({
           content: "❌ These slash commands are owner-only.",
           ephemeral: true
         });
       }
-    }
 
-    const languageFile = path.join(__dirname, `../languages/${config.language}.js`);
-    const lang = require(languageFile);
+      // Find the slash command from the collection
+      const command = client.slashCommands.get(interaction.commandName);
+      if (!command) {
+        return interaction.reply({
+          content: "❌ Command not found.",
+          ephemeral: true
+        });
+      }
 
-    function cmd_loader() {
-      if (interaction?.type === InteractionType.ApplicationCommand) {
-        fs.readdir(config.commandsDir, (err, files) => {
-          if (err) throw err;
-          files.forEach(async (f) => {
-            let props = require(`.${config.commandsDir}/${f}`);
-            if (interaction.commandName === props.name) {
-              try {
-                if (interaction?.member?.permissions?.has(props?.permissions || "0x0000000000000800")) {
-                  return props.run(client, interaction, lang);
-                } else {
-                  return interaction?.reply({ content: lang.errors.noPermission, ephemeral: true });
-                }
-              } catch (e) {
-                return interaction?.reply({ content: lang.errors.generalError.replace("{error}", e.message), ephemeral: true });
-              }
-            }
-          });
+      try {
+        await command.run(client, interaction);
+      } catch (err) {
+        console.error(err);
+        return interaction.reply({
+          content: `❌ Error: ${err.message}`,
+          ephemeral: true
         });
       }
     }
-
-    cmd_loader();
   } catch (e) {
     console.error(e);
   }
