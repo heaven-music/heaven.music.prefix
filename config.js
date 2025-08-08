@@ -1,6 +1,6 @@
 module.exports = {
   TOKEN: "",
-  const prefix = config.prefix; // ⬅️ NEW: Prefix for normal commands
+  prefix: ".", // ⬅️ NEW: Prefix for normal commands
   language: "en",
   ownerID: ["894898932549832714"], // Your ID (remove empty string)
   
