@@ -1,5 +1,5 @@
 module.exports = {
-  TOKEN: "MTQwMDQyMjk5ODM4OTAzNTAxOA.G_AkYK.BXtnLtDqIqhorJuaVMUpzvC5PyFS-pIcuubxwQ",
+  TOKEN: process.env.TOKEN,
   prefix: ".", // ⬅️ NEW: Prefix for normal commands
   language: "en",
   ownerID: ["894898932549832714"], // Your ID (remove empty string)
