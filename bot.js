@@ -17,6 +17,10 @@ client.config = config;
 client.prefixCommands = new Collection();
 client.slashCommands = new Collection();
 
+// === Initialize Riffy Player ===
+const { initializePlayer } = require("./player");
+initializePlayer(client);
+
 // ===== Load Prefix Commands (Public) =====
 const prefixCommandsPath = path.join(__dirname, "prefixCommands");
 if (fs.existsSync(prefixCommandsPath)) {
