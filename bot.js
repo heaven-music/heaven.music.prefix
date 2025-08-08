@@ -16,6 +16,31 @@ const client = new Client({
 client.config = config;
 initializePlayer(client);
 
+// ==================== PREFIX COMMAND HANDLER ==================== // NEW
+client.prefixCommands = new Map();
+const prefixCommandFiles = fs.readdirSync("./prefixCommands").filter(file => file.endsWith(".js"));
+for (const file of prefixCommandFiles) {
+    const command = require(`./prefixCommands/${file}`);
+    client.prefixCommands.set(command.name, command);
+}
+
+client.on("messageCreate", async message => {
+    if (!message.content.startsWith(config.prefix) || message.author.bot) return;
+
+    const args = message.content.slice(config.prefix.length).trim().split(/ +/);
+    const cmdName = args.shift().toLowerCase();
+    const cmd = client.prefixCommands.get(cmdName);
+
+    if (!cmd) return;
+    try {
+        await cmd.execute(message, args, client);
+    } catch (error) {
+        console.error(error);
+        message.reply("There was an error executing that command!");
+    }
+});
+// ================================================================ //
+
 client.on("ready", () => {
     console.log(`${colors.cyan}[ SYSTEM ]${colors.reset} ${colors.green}Client logged as ${colors.yellow}${client.user.tag}${colors.reset}`);
     console.log(`${colors.cyan}[ MUSIC ]${colors.reset} ${colors.green}Riffy Music System Ready 🎵${colors.reset}`);
@@ -24,6 +49,7 @@ client.on("ready", () => {
 });
 client.config = config;
 
+// ==================== EVENTS LOADING ==================== //
 fs.readdir("./events", (_err, files) => {
   files.forEach((file) => {
     if (!file.endsWith(".js")) return;
@@ -34,7 +60,7 @@ fs.readdir("./events", (_err, files) => {
   });
 });
 
-
+// ==================== SLASH COMMANDS LOADING ==================== //
 client.commands = [];
 fs.readdir(config.commandsDir, (err, files) => {
   if (err) throw err;
@@ -54,6 +80,28 @@ fs.readdir(config.commandsDir, (err, files) => {
   });
 });
 
+// ==================== SLASH COMMAND OWNER-ONLY CHECK ==================== // NEW
+client.on("interactionCreate", async interaction => {
+    if (!interaction.isCommand()) return;
+
+    // Check if the command is in our slash list
+    const cmd = client.commands.find(c => c.name === interaction.commandName);
+    if (!cmd) return;
+
+    // Only allow owner to use slash commands
+    if (interaction.user.id !== config.ownerID) {
+        return interaction.reply({ content: "❌ Only the bot owner can use slash commands.", ephemeral: true });
+    }
+
+    try {
+        const commandFile = require(`${config.commandsDir}/${interaction.commandName}.js`);
+        await commandFile.run(client, interaction);
+    } catch (err) {
+        console.error(err);
+        interaction.reply({ content: "There was an error executing this command.", ephemeral: true });
+    }
+});
+// ============================================================ //
 
 client.on("raw", (d) => {
     const { GatewayDispatchEvents } = require("discord.js");
