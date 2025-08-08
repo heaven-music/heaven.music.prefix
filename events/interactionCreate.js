@@ -9,6 +9,16 @@ module.exports = async (client, interaction) => {
       return interaction?.reply({ content: "This command can only be used in a server.", ephemeral: true });
     }
 
+    // ✅ Owner-only check for slash commands
+    if (interaction?.type === InteractionType.ApplicationCommand) {
+      if (!config.ownerID.includes(interaction.user.id)) {
+        return interaction.reply({
+          content: "❌ These slash commands are owner-only.",
+          ephemeral: true
+        });
+      }
+    }
+
     const languageFile = path.join(__dirname, `../languages/${config.language}.js`);
     const lang = require(languageFile);
 
