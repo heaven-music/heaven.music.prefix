@@ -69,3 +69,17 @@ client.login(config.TOKEN).then(() => {
 }).catch(err => {
   console.error("❌ Failed to login:", err);
 });
+
+// ===== Keep Alive Web Server for Render =====
+const express = require('express');
+const app = express();
+
+// Serve your index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Bind to Render's PORT
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`🌐 Web server running on port ${process.env.PORT || 3000}`);
+});
