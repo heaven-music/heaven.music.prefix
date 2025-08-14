@@ -7,8 +7,8 @@ module.exports = {
   mongodbUri: "mongodb+srv://heaven:heaven@discordbot.hxbqucv.mongodb.net/?retryWrites=true&w=majority",
   spotifyClientId: "",
   spotifyClientSecret: "",
-  setupFilePath: './commands/setup.json',
-  commandsDir: './commands',  
+  setupFilePath: './prefixCommands/setup.json',
+  commandsDir: './prefixCommands',  
   embedColor: "#1db954",
   activityName: "YouTube Music", 
   activityType: "LISTENING", // Available activity types: LISTENING , PLAYING
