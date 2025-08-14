@@ -17,7 +17,7 @@ async function getSpotifyPlaylistTracks(playlistId) {
 
         let tracks = [];
         let offset = 0;
-        let limit = 100;
+        const limit = 100;
         let total = 0;
 
         do {
@@ -40,7 +40,7 @@ async function getSpotifyPlaylistTracks(playlistId) {
     }
 }
 
-async function play(client, ctx, args) {
+async function play(client, ctx, args = []) {
     try {
         let query, user, guildId, voiceChannelId, textChannelId;
 
@@ -54,7 +54,7 @@ async function play(client, ctx, args) {
         }
         // Prefix command
         else {
-            query = args?.join(' ') || '';
+            query = args.join(' ') || '';
             user = ctx.author;
             guildId = ctx.guild.id;
             voiceChannelId = ctx.member?.voice?.channelId;
@@ -81,7 +81,7 @@ async function play(client, ctx, args) {
         }
 
         // No lavalink nodes
-        if (!client.riffy.nodes || client.riffy.nodes.size === 0) {
+        if (!client.riffy?.nodes || client.riffy.nodes.size === 0) {
             const embed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setAuthor({
@@ -95,6 +95,7 @@ async function play(client, ctx, args) {
             return ctx.reply({ embeds: [embed], ephemeral: ctx.isChatInputCommand?.() });
         }
 
+        // Create connection
         const player = client.riffy.createConnection({
             guildId,
             voiceChannel: voiceChannelId,
