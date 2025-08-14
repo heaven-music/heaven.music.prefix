@@ -3,7 +3,6 @@ const { InteractionType } = require("discord.js");
 
 module.exports = async (client, interaction) => {
   try {
-    // Only in servers
     if (!interaction?.guild) {
       return interaction.reply({
         content: "❌ This command can only be used in a server.",
@@ -11,7 +10,6 @@ module.exports = async (client, interaction) => {
       });
     }
 
-    // ✅ Owner-only check for slash commands
     if (interaction.type === InteractionType.ApplicationCommand) {
       if (!config.ownerID.includes(interaction.user.id)) {
         return interaction.reply({
@@ -20,7 +18,6 @@ module.exports = async (client, interaction) => {
         });
       }
 
-      // Find the slash command from the collection
       const command = client.slashCommands.get(interaction.commandName);
       if (!command) {
         return interaction.reply({
@@ -30,7 +27,8 @@ module.exports = async (client, interaction) => {
       }
 
       try {
-        await command.run(client, interaction);
+        // Pass empty args so play.js works in both cases
+        await command.run(client, interaction, []);
       } catch (err) {
         console.error(err);
         return interaction.reply({
