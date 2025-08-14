@@ -1,6 +1,6 @@
 const { Riffy, Player } = require("riffy");
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder, PermissionsBitField } = require("discord.js");
-const { requesters } = require("./commands/play");
+const { requesters } = require("./prefixCommands/play");
 const { Dynamic } = require("musicard");
 const config = require("./config.js");
 const musicIcons = require('./UI/icons/musicicons.js');
@@ -472,5 +472,6 @@ function createControlButtons(disabled) {
 }
 
 module.exports = { initializePlayer };
+
 
 
