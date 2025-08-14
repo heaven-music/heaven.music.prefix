@@ -5,12 +5,10 @@ const SpotifyWebApi = require('spotify-web-api-node');
 const { getData } = require('spotify-url-info')(require('node-fetch'));
 const requesters = new Map();
 
-
 const spotifyApi = new SpotifyWebApi({
-    clientId: config.spotifyClientId, 
+    clientId: config.spotifyClientId,
     clientSecret: config.spotifyClientSecret,
 });
-
 
 async function getSpotifyPlaylistTracks(playlistId) {
     try {
@@ -42,11 +40,33 @@ async function getSpotifyPlaylistTracks(playlistId) {
     }
 }
 
-async function play(client, interaction, lang) {
+async function play(client, ctx, lang, args) {
     try {
-        const query = interaction.options.getString('name');
+        let query, user, guildId, voiceChannelId, textChannelId;
 
-        if (!interaction.member.voice.channelId) {
+        // Slash command
+        if (ctx.isChatInputCommand?.()) {
+            query = ctx.options.getString('name');
+            user = ctx.user;
+            guildId = ctx.guildId;
+            voiceChannelId = ctx.member.voice.channelId;
+            textChannelId = ctx.channelId;
+        }
+        // Prefix command
+        else {
+            query = args.join(' ');
+            user = ctx.author;
+            guildId = ctx.guild.id;
+            voiceChannelId = ctx.member?.voice?.channelId;
+            textChannelId = ctx.channel.id;
+
+            if (!query) {
+                return ctx.reply(`❌ Usage: \`${config.prefix}play <song name / link / playlist>\``);
+            }
+        }
+
+        // No voice channel
+        if (!voiceChannelId) {
             const embed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setAuthor({
@@ -57,10 +77,10 @@ async function play(client, interaction, lang) {
                 .setFooter({ text: lang.footer, iconURL: musicIcons.heartIcon })
                 .setDescription(lang.play.embed.noVoiceChannel);
 
-            await interaction.reply({ embeds: [embed], ephemeral: true });
-            return;
+            return ctx.reply({ embeds: [embed], ephemeral: ctx.isChatInputCommand?.() });
         }
 
+        // No lavalink nodes
         if (!client.riffy.nodes || client.riffy.nodes.size === 0) {
             const embed = new EmbedBuilder()
                 .setColor('#ff0000')
@@ -72,22 +92,24 @@ async function play(client, interaction, lang) {
                 .setFooter({ text: lang.footer, iconURL: musicIcons.heartIcon })
                 .setDescription(lang.play.embed.noLavalinkNodes);
 
-            await interaction.reply({ embeds: [embed], ephemeral: true });
-            return;
+            return ctx.reply({ embeds: [embed], ephemeral: ctx.isChatInputCommand?.() });
         }
 
         const player = client.riffy.createConnection({
-            guildId: interaction.guildId,
-            voiceChannel: interaction.member.voice.channelId,
-            textChannel: interaction.channelId,
+            guildId,
+            voiceChannel: voiceChannelId,
+            textChannel: textChannelId,
             deaf: true
         });
 
-        await interaction.deferReply();
+        if (ctx.isChatInputCommand?.()) {
+            await ctx.deferReply();
+        }
 
         let tracksToQueue = [];
         let isPlaylist = false;
 
+        // Spotify handling
         if (query.includes('spotify.com')) {
             try {
                 const spotifyData = await getData(query);
@@ -97,17 +119,16 @@ async function play(client, interaction, lang) {
                     tracksToQueue.push(trackName);
                 } else if (spotifyData.type === 'playlist') {
                     isPlaylist = true;
-                    const playlistId = query.split('/playlist/')[1].split('?')[0]; 
+                    const playlistId = query.split('/playlist/')[1].split('?')[0];
                     tracksToQueue = await getSpotifyPlaylistTracks(playlistId);
                 }
             } catch (err) {
                 console.error('Error fetching Spotify data:', err);
-                await interaction.followUp({ content: "❌ Failed to fetch Spotify data." });
-                return;
+                return sendFollowUp(ctx, "❌ Failed to fetch Spotify data.");
             }
         } else {
-            
-            const resolve = await client.riffy.resolve({ query, requester: interaction.user.username });
+            // Non-Spotify (YouTube, etc.)
+            const resolve = await client.riffy.resolve({ query, requester: user.username });
 
             if (!resolve || typeof resolve !== 'object' || !Array.isArray(resolve.tracks)) {
                 throw new TypeError('Invalid response from Riffy');
@@ -116,67 +137,73 @@ async function play(client, interaction, lang) {
             if (resolve.loadType === 'playlist') {
                 isPlaylist = true;
                 for (const track of resolve.tracks) {
-                    track.info.requester = interaction.user.username;
+                    track.info.requester = user.username;
                     player.queue.add(track);
-                    requesters.set(track.info.uri, interaction.user.username);
+                    requesters.set(track.info.uri, user.username);
                 }
             } else if (resolve.loadType === 'search' || resolve.loadType === 'track') {
                 const track = resolve.tracks.shift();
-                track.info.requester = interaction.user.username;
+                track.info.requester = user.username;
                 player.queue.add(track);
-                requesters.set(track.info.uri, interaction.user.username);
+                requesters.set(track.info.uri, user.username);
             } else {
                 const errorEmbed = new EmbedBuilder()
-                .setColor(config.embedColor)
-                .setAuthor({ 
-                    name: lang.play.embed.error,
-                    iconURL: musicIcons.alertIcon,
-                    url: config.SupportServer
-                })
-                .setFooter({ text: lang.footer, iconURL: musicIcons.heartIcon })
-                .setDescription(lang.play.embed.noResults);
+                    .setColor(config.embedColor)
+                    .setAuthor({
+                        name: lang.play.embed.error,
+                        iconURL: musicIcons.alertIcon,
+                        url: config.SupportServer
+                    })
+                    .setFooter({ text: lang.footer, iconURL: musicIcons.heartIcon })
+                    .setDescription(lang.play.embed.noResults);
 
-            await interaction.followUp({ embeds: [errorEmbed] });
-                return;
+                return sendFollowUp(ctx, { embeds: [errorEmbed] });
             }
         }
 
+        // Queue Spotify playlist tracks
         let queuedTracks = 0;
-
-       
         for (const trackQuery of tracksToQueue) {
-            const resolve = await client.riffy.resolve({ query: trackQuery, requester: interaction.user.username });
+            const resolve = await client.riffy.resolve({ query: trackQuery, requester: user.username });
             if (resolve.tracks.length > 0) {
                 const trackInfo = resolve.tracks[0];
                 player.queue.add(trackInfo);
-                requesters.set(trackInfo.uri, interaction.user.username);
+                requesters.set(trackInfo.uri, user.username);
                 queuedTracks++;
             }
         }
 
         if (!player.playing && !player.paused) player.play();
 
-        const randomEmbed = new EmbedBuilder()
-        .setColor(config.embedColor)
-        .setAuthor({
-            name: lang.play.embed.requestUpdated,
-            iconURL: musicIcons.beats2Icon,
-            url: config.SupportServer
-        })
-        .setDescription(lang.play.embed.successProcessed)
-        .setFooter({ text: lang.footer, iconURL: musicIcons.heartIcon });
-    
-        const message = await interaction.followUp({ embeds: [randomEmbed] });
+        const successEmbed = new EmbedBuilder()
+            .setColor(config.embedColor)
+            .setAuthor({
+                name: lang.play.embed.requestUpdated,
+                iconURL: musicIcons.beats2Icon,
+                url: config.SupportServer
+            })
+            .setDescription(lang.play.embed.successProcessed)
+            .setFooter({ text: lang.footer, iconURL: musicIcons.heartIcon });
 
-        setTimeout(() => {
-            message.delete().catch(() => {}); 
-        }, 3000);
-        
-    
+        const message = await sendFollowUp(ctx, { embeds: [successEmbed] });
+
+        if (!ctx.author) { // Slash
+            setTimeout(() => {
+                message.delete().catch(() => { });
+            }, 3000);
+        }
 
     } catch (error) {
         console.error('Error processing play command:', error);
-        await interaction.followUp({ content: "❌ An error occurred while processing the request." });
+        return sendFollowUp(ctx, "❌ An error occurred while processing the request.");
+    }
+}
+
+function sendFollowUp(ctx, content) {
+    if (ctx.isChatInputCommand?.()) {
+        return ctx.followUp(content);
+    } else {
+        return ctx.reply(content);
     }
 }
 
@@ -190,6 +217,7 @@ module.exports = {
         type: ApplicationCommandOptionType.String,
         required: true
     }],
-    run: play,
+    run: play,     // prefix handler
+    execute: play, // slash handler
     requesters: requesters,
 };
