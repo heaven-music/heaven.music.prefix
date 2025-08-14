@@ -13,7 +13,7 @@ module.exports = {
     try {
       const botName = client.user.username;
 
-      const commandsPath = path.join(__dirname, "../commands");
+      const commandsPath = path.join(__dirname, "../prefixCommands");
       const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
       const totalCommands = commandFiles.length;
 
