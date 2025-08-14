@@ -40,7 +40,7 @@ async function getSpotifyPlaylistTracks(playlistId) {
     }
 }
 
-async function play(client, ctx, lang, args) {
+async function play(client, ctx, args) {
     try {
         let query, user, guildId, voiceChannelId, textChannelId;
 
@@ -54,7 +54,7 @@ async function play(client, ctx, lang, args) {
         }
         // Prefix command
         else {
-            query = args.join(' ');
+            query = args?.join(' ') || '';
             user = ctx.author;
             guildId = ctx.guild.id;
             voiceChannelId = ctx.member?.voice?.channelId;
@@ -70,12 +70,12 @@ async function play(client, ctx, lang, args) {
             const embed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setAuthor({
-                    name: lang.play.embed.error,
+                    name: 'Error',
                     iconURL: musicIcons.alertIcon,
                     url: config.SupportServer
                 })
-                .setFooter({ text: lang.footer, iconURL: musicIcons.heartIcon })
-                .setDescription(lang.play.embed.noVoiceChannel);
+                .setFooter({ text: 'Music Bot', iconURL: musicIcons.heartIcon })
+                .setDescription('You must be in a voice channel to use this command.');
 
             return ctx.reply({ embeds: [embed], ephemeral: ctx.isChatInputCommand?.() });
         }
@@ -85,12 +85,12 @@ async function play(client, ctx, lang, args) {
             const embed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setAuthor({
-                    name: lang.play.embed.error,
+                    name: 'Error',
                     iconURL: musicIcons.alertIcon,
                     url: config.SupportServer
                 })
-                .setFooter({ text: lang.footer, iconURL: musicIcons.heartIcon })
-                .setDescription(lang.play.embed.noLavalinkNodes);
+                .setFooter({ text: 'Music Bot', iconURL: musicIcons.heartIcon })
+                .setDescription('No Lavalink nodes are connected.');
 
             return ctx.reply({ embeds: [embed], ephemeral: ctx.isChatInputCommand?.() });
         }
@@ -150,12 +150,12 @@ async function play(client, ctx, lang, args) {
                 const errorEmbed = new EmbedBuilder()
                     .setColor(config.embedColor)
                     .setAuthor({
-                        name: lang.play.embed.error,
+                        name: 'Error',
                         iconURL: musicIcons.alertIcon,
                         url: config.SupportServer
                     })
-                    .setFooter({ text: lang.footer, iconURL: musicIcons.heartIcon })
-                    .setDescription(lang.play.embed.noResults);
+                    .setFooter({ text: 'Music Bot', iconURL: musicIcons.heartIcon })
+                    .setDescription('No results found.');
 
                 return sendFollowUp(ctx, { embeds: [errorEmbed] });
             }
@@ -178,16 +178,16 @@ async function play(client, ctx, lang, args) {
         const successEmbed = new EmbedBuilder()
             .setColor(config.embedColor)
             .setAuthor({
-                name: lang.play.embed.requestUpdated,
+                name: 'Request Added',
                 iconURL: musicIcons.beats2Icon,
                 url: config.SupportServer
             })
-            .setDescription(lang.play.embed.successProcessed)
-            .setFooter({ text: lang.footer, iconURL: musicIcons.heartIcon });
+            .setDescription('Your track(s) have been added to the queue.')
+            .setFooter({ text: 'Music Bot', iconURL: musicIcons.heartIcon });
 
         const message = await sendFollowUp(ctx, { embeds: [successEmbed] });
 
-        if (!ctx.author) { // Slash
+        if (ctx.isChatInputCommand?.()) {
             setTimeout(() => {
                 message.delete().catch(() => { });
             }, 3000);
